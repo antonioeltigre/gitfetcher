@@ -3,10 +3,11 @@
     using System;
     using System.Diagnostics;
     using System.Threading;
+    using System.Threading.Tasks;
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             do
             {
@@ -19,7 +20,7 @@
                 LogProcessOutput(process);
 
                 Console.Out.WriteLine("fetch finished");
-                Wait();
+                await Wait();
             }
             while (true);
         }
@@ -38,7 +39,7 @@
                        };
         }
 
-        private static void Wait() => Thread.Sleep((int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+        private static async Task Wait() => await Task.Delay(TimeSpan.FromMinutes(1));
 
         private static void LogProcessOutput(Process process) => Console.Out.WriteLine(process.StandardOutput.ReadToEnd());
     }
