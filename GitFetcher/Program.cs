@@ -1,20 +1,25 @@
 ﻿namespace GitFetcher
 {
     using System;
+    using System.Configuration;
     using System.Diagnostics;
-    using System.Threading;
     using System.Threading.Tasks;
 
     public class Program
     {
-        public static async Task Main(string[] args)
+        private static TimeSpan PollFrequency => TimeSpan.FromMinutes(int.Parse(ConfigurationManager.AppSettings["pollFrequencyInMinutes"]));
+
+        private static string RepoPath => ConfigurationManager.AppSettings["path"];
+
+        public static async Task Main()
         {
+            LogConfigurationSettings();
+
             do
             {
                 Console.Out.WriteLine("doing a fetch");
 
-                var processInfo = GetProcessInfo(@"E:\Repo\GitActisure");
-
+                var processInfo = GetProcessInfo();
                 var process = Process.Start(processInfo);
 
                 LogProcessOutput(process);
@@ -25,13 +30,20 @@
             while (true);
         }
 
-        private static ProcessStartInfo GetProcessInfo(string path)
+        private static void LogConfigurationSettings()
+        {
+            Console.Out.WriteLine($"Path - {RepoPath}");
+            Console.Out.WriteLine($"Polling frequency - {PollFrequency}");
+            Console.Out.WriteLine();
+        }
+
+        private static ProcessStartInfo GetProcessInfo()
         {
             return new ProcessStartInfo
                        {
                            UseShellExecute = false,
                            RedirectStandardOutput = true,
-                           WorkingDirectory = path,
+                           WorkingDirectory = RepoPath,
                            FileName = @"C:\Windows\System32\cmd.exe",
                            Verb = "runas",
                            Arguments = "/c " + "git svn fetch",
@@ -39,7 +51,7 @@
                        };
         }
 
-        private static async Task Wait() => await Task.Delay(TimeSpan.FromMinutes(1));
+        private static async Task Wait() => await Task.Delay(PollFrequency);
 
         private static void LogProcessOutput(Process process) => Console.Out.WriteLine(process.StandardOutput.ReadToEnd());
     }
