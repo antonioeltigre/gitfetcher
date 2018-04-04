@@ -8,5 +8,10 @@
         {
             Console.Out.WriteLine(message);
         }
+
+        public void Log(Exception exception)
+        {
+            Console.Out.WriteLine(exception.Message);
+        }
     }
 }

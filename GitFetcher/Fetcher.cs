@@ -18,15 +18,23 @@
 
         public void DoAFetch()
         {
-            var processInfo = this.GetProcessInfo();
-            var process = Process.Start(processInfo);
-
-            if (process == null)
+            try
             {
-                this.logger.Log($"Unable to start process {processInfo.FileName}");
-                return;
+                this.StartProcess();
             }
+            catch (Exception e)
+            {
+                this.logger.Log(e);
+            }
+        }
 
+        private void StartProcess()
+        {
+            var process = new Process { StartInfo = this.GetProcessInfo() };
+
+            process.OutputDataReceived += (o, args) => this.logger.Log(args.Data);
+            process.Start();
+            process.BeginOutputReadLine();
             process.WaitForExit();
         }
 
@@ -39,8 +47,9 @@
                            FileName = Path.Combine(Environment.SystemDirectory, "cmd.exe"),
                            Verb = "runas",
                            Arguments = "/c " + "git svn fetch",
-                           WindowStyle = ProcessWindowStyle.Hidden
-                       };
+                           WindowStyle = ProcessWindowStyle.Hidden,
+                           RedirectStandardOutput = true
+        };
         }
     }
 }
